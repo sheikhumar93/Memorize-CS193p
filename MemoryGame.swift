@@ -18,25 +18,29 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
             }
         }
     }
+    var score: Int = 0
     
-    // Second card should be matched with the first selection
-    // If two cards have been matched then isMatched should be set to true
-    // If third card is pressed on third tap the first two cards should isFaceUp = false
     mutating func choose (card: Card) {
         if let chosenIndex = cards.firstIndex(matching: card), !cards[chosenIndex].isFaceUp, !cards[chosenIndex].isMatched {
             if let potentialMatchIndex = indexOfTheOneAndOnlyFaceUpCard {
                 if cards[chosenIndex].content == cards[potentialMatchIndex].content {
                     cards[chosenIndex].isMatched = true
                     cards[potentialMatchIndex].isMatched = true
+                    score += 2
                 }
-                indexOfTheOneAndOnlyFaceUpCard = nil
+                else {
+                    if (cards[chosenIndex].alreadySeen || cards[potentialMatchIndex].alreadySeen) {
+                        score -= 1
+                    } else if (cards[chosenIndex].alreadySeen && cards[potentialMatchIndex].alreadySeen) {
+                        score -= 2
+                    }
+                    cards[chosenIndex].alreadySeen = true
+                    cards[potentialMatchIndex].alreadySeen = true
+                }
+                self.cards[chosenIndex].isFaceUp = true
             } else {
-                for index in cards.indices {
-                    cards[index].isFaceUp = false
-                }
                 indexOfTheOneAndOnlyFaceUpCard = chosenIndex
             }
-            self.cards[chosenIndex].isFaceUp = true
         }
     }
     
@@ -55,5 +59,6 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
         var isMatched: Bool = false
         var content: CardContent
         var id: Int
+        var alreadySeen: Bool = false
     }
 }
